@@ -10,11 +10,12 @@ interface TrailerTopViewProps {
   packages: Package[];
   selectedPackageId: string | null;
   onSelect: (id: string) => void;
+  activeLayerIds?: Set<string> | null; // null = todas las capas
 }
 
 const PAD = 40; // padding en cm para etiquetas
 
-export function TrailerTopView({ trailer, packages, selectedPackageId, onSelect }: TrailerTopViewProps) {
+export function TrailerTopView({ trailer, packages, selectedPackageId, onSelect, activeLayerIds }: TrailerTopViewProps) {
   const { internalLength: L, internalWidth: W } = trailer;
   const vbW = L + PAD * 2;
   const vbH = W + PAD * 2;
@@ -59,18 +60,20 @@ export function TrailerTopView({ trailer, packages, selectedPackageId, onSelect 
         const rotation = pkg.position.rotationY === 90;
         const pkgL = rotation ? pkg.width : pkg.length;
         const pkgW = rotation ? pkg.length : pkg.width;
+        const isInLayer = !activeLayerIds || activeLayerIds.has(pkg.id);
 
         return (
-          <PackageRect
-            key={pkg.id}
-            pkg={pkg}
-            x={PAD + pkg.position.z}
-            y={PAD + pkg.position.x}
-            w={pkgL}
-            h={pkgW}
-            isSelected={selectedPackageId === pkg.id}
-            onClick={onSelect}
-          />
+          <g key={pkg.id} opacity={isInLayer ? 1 : 0.12}>
+            <PackageRect
+              pkg={pkg}
+              x={PAD + pkg.position.z}
+              y={PAD + pkg.position.x}
+              w={pkgL}
+              h={pkgW}
+              isSelected={selectedPackageId === pkg.id}
+              onClick={onSelect}
+            />
+          </g>
         );
       })}
 
