@@ -1,8 +1,9 @@
-import { LayoutGrid, AlignLeft } from "lucide-react";
+import { LayoutGrid, AlignLeft, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrailerTopView } from "./TrailerTopView";
 import { TrailerSideView } from "./TrailerSideView";
+import { Trailer3DView } from "./Trailer3DView";
 import { LayerSelector } from "./LayerSelector";
 import { cn } from "@/lib/utils";
 import type { Package, Trailer } from "@/types";
@@ -48,6 +49,7 @@ export function TrailerCanvas({
   }
 
   const activeLayer = activeLayerIndex !== null ? layers[activeLayerIndex] : null;
+  const is3D = viewMode === "3d";
 
   return (
     <div className="flex flex-col h-full gap-3">
@@ -62,7 +64,7 @@ export function TrailerCanvas({
             onClick={() => onViewModeChange("top")}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
-            Vista superior
+            Superior
           </Button>
           <Button
             variant="ghost"
@@ -71,12 +73,21 @@ export function TrailerCanvas({
             onClick={() => onViewModeChange("side")}
           >
             <AlignLeft className="h-3.5 w-3.5" />
-            Vista lateral
+            Lateral
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn("rounded-none gap-2 h-8 border-l", is3D && "bg-navy text-white hover:bg-navy/90")}
+            onClick={() => onViewModeChange("3d")}
+          >
+            <Box className="h-3.5 w-3.5" />
+            3D
           </Button>
         </div>
 
-        {/* Selector de capas */}
-        {layers.length > 0 && (
+        {/* Selector de capas (oculto en 3D — todas las capas son visibles) */}
+        {layers.length > 0 && !is3D && (
           <LayerSelector
             layers={layers}
             activeIndex={activeLayerIndex}
@@ -89,9 +100,12 @@ export function TrailerCanvas({
         </div>
       </div>
 
-      {/* SVG */}
-      <div className="flex-1 min-h-0 rounded-lg border bg-card overflow-hidden flex items-center justify-center p-4">
-        {viewMode === "top" ? (
+      {/* Viewport */}
+      <div className={cn(
+        "flex-1 min-h-0 rounded-lg border bg-card overflow-hidden",
+        !is3D && "flex items-center justify-center p-4",
+      )}>
+        {viewMode === "top" && (
           <TrailerTopView
             trailer={trailer}
             packages={packages}
@@ -99,13 +113,23 @@ export function TrailerCanvas({
             onSelect={onSelect}
             activeLayerIds={activeLayerIds}
           />
-        ) : (
+        )}
+        {viewMode === "side" && (
           <TrailerSideView
             trailer={trailer}
             packages={packages}
             selectedPackageId={selectedPackageId}
             onSelect={onSelect}
             activeLayer={activeLayer}
+            activeLayerIds={activeLayerIds}
+          />
+        )}
+        {is3D && (
+          <Trailer3DView
+            trailer={trailer}
+            packages={packages}
+            selectedPackageId={selectedPackageId}
+            onSelect={onSelect}
             activeLayerIds={activeLayerIds}
           />
         )}
@@ -121,14 +145,21 @@ export function TrailerCanvas({
           { color: "#94A3B8", label: "Sin parada" },
         ].map(({ color, label }) => (
           <span key={label} className="flex items-center gap-1.5">
-            <span className="inline-block h-2.5 w-2.5 rounded-sm border"
-              style={{ backgroundColor: color + "40", borderColor: color }} />
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-sm border"
+              style={{ backgroundColor: color + "40", borderColor: color }}
+            />
             {label}
           </span>
         ))}
-        {activeLayer && (
+        {activeLayer && !is3D && (
           <span className="ml-auto text-brand-orange font-medium">
             {activeLayer.label} visible
+          </span>
+        )}
+        {is3D && (
+          <span className="ml-auto text-xs text-muted-foreground italic">
+            Arrastra para rotar · scroll para zoom · clic en paquete para seleccionar
           </span>
         )}
       </div>

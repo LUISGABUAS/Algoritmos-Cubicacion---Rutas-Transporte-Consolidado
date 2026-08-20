@@ -6,7 +6,7 @@ import { useOperationSummary } from "../hooks/useDashboardData";
 import { formatVolume, formatWeight, formatPercent } from "@/utils/formatters";
 
 interface SummaryItemProps {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   sub?: string;
