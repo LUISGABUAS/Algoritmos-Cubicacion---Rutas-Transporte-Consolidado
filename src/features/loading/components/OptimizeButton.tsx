@@ -11,7 +11,7 @@ interface OptimizeButtonProps {
 
 const CONFIG: Record<OptimizationStatus, {
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   className: string;
   disabled: boolean;
 }> = {

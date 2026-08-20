@@ -1,4 +1,4 @@
-export type ViewMode = "top" | "side";
+export type ViewMode = "top" | "side" | "3d";
 
 export interface LayerSlice {
   index: number;
