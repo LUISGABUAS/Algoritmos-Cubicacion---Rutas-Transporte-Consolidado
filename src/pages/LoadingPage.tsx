@@ -61,7 +61,11 @@ export default function LoadingPage() {
 
         <div className="flex items-center gap-3">
           {trailer && packages.length > 0 && (
-            <LoadingMetrics trailer={trailer} packages={packages} />
+            <LoadingMetrics
+              trailer={trailer}
+              packages={packages}
+              overallAccessibility={packages.some((p) => p.position) ? overallAccessibility : undefined}
+            />
           )}
           <OptimizeButton
             status={optimization.status}
@@ -102,17 +106,21 @@ export default function LoadingPage() {
 
         {/* Derecha — Detalle + Accesibilidad */}
         <div className="w-72 shrink-0 flex flex-col overflow-hidden border-l bg-card">
-          <div className="flex-1 overflow-hidden">
+          {/* Detalle del paquete seleccionado: ocupa la mitad superior */}
+          <div className="flex-1 min-h-0 overflow-hidden">
             <PackageDetail pkg={selectedPackage} />
           </div>
 
-          {(stopAccessibility.length > 0 || optimization.status !== "idle") && (
+          {/* Panel de accesibilidad: siempre visible cuando hay paquetes */}
+          {packages.length > 0 && (
             <>
               <Separator />
-              <div className="overflow-auto max-h-64 shrink-0">
+              <div className="h-72 shrink-0 overflow-hidden">
                 <AccessibilityPanel
                   overallAccessibility={overallAccessibility}
                   stopAccessibility={stopAccessibility}
+                  packages={packages}
+                  hasPlacedPackages={packages.some((p) => p.position)}
                   onHighlightPackage={setSelectedPackageId}
                 />
               </div>
