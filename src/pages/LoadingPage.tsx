@@ -21,6 +21,10 @@ export default function LoadingPage() {
     setSelectedPackageId,
     viewMode,
     setViewMode,
+    layers,
+    activeLayerIndex,
+    activeLayerIds,
+    setActiveLayerIndex,
     optimization,
     handleOptimize,
     stopAccessibility,
@@ -88,6 +92,10 @@ export default function LoadingPage() {
             onSelect={setSelectedPackageId}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
+            layers={layers}
+            activeLayerIndex={activeLayerIndex}
+            activeLayerIds={activeLayerIds}
+            onLayerChange={setActiveLayerIndex}
             isLoading={isLoading}
           />
         </div>

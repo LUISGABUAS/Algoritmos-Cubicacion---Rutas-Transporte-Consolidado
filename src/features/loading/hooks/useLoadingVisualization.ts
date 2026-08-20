@@ -5,11 +5,13 @@ import { packageService } from "@/services/packageService";
 import { routeService } from "@/services/routeService";
 import { useOptimization } from "./useOptimization";
 import { computeStopAccessibility } from "../utils/accessibilityUtils";
+import { computeLayers, getActiveLayerIds } from "../utils/layerUtils";
 import type { ViewMode } from "../types";
 
 export function useLoadingVisualization(trailerId: string) {
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("top");
+  const [activeLayerIndex, setActiveLayerIndex] = useState<number | null>(null);
 
   const { data: trailer, isLoading: loadingTrailer } = useQuery({
     queryKey: ["trailers", trailerId],
@@ -53,6 +55,12 @@ export function useLoadingVisualization(trailerId: string) {
   const pendingPackages = packages.filter((p) => !p.position);
   const selectedPackage = packages.find((p) => p.id === selectedPackageId) ?? null;
 
+  const layers = useMemo(() => computeLayers(packages), [packages]);
+  const activeLayerIds = useMemo(
+    () => getActiveLayerIds(layers, activeLayerIndex),
+    [layers, activeLayerIndex]
+  );
+
   const stopAccessibility = useMemo(
     () => computeStopAccessibility(packages, route),
     [packages, route]
@@ -79,6 +87,10 @@ export function useLoadingVisualization(trailerId: string) {
     setSelectedPackageId,
     viewMode,
     setViewMode,
+    layers,
+    activeLayerIndex,
+    activeLayerIds,
+    setActiveLayerIndex,
     optimization,
     handleOptimize,
     stopAccessibility,

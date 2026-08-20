@@ -10,11 +10,13 @@ interface TrailerSideViewProps {
   packages: Package[];
   selectedPackageId: string | null;
   onSelect: (id: string) => void;
+  activeLayer?: { yMin: number; yMax: number } | null;
+  activeLayerIds?: Set<string> | null;
 }
 
 const PAD = 40;
 
-export function TrailerSideView({ trailer, packages, selectedPackageId, onSelect }: TrailerSideViewProps) {
+export function TrailerSideView({ trailer, packages, selectedPackageId, onSelect, activeLayer, activeLayerIds }: TrailerSideViewProps) {
   const { internalLength: L, internalHeight: H } = trailer;
   const vbW = L + PAD * 2;
   const vbH = H + PAD * 2;
@@ -53,25 +55,40 @@ export function TrailerSideView({ trailer, packages, selectedPackageId, onSelect
           stroke="#E2E8F0" strokeWidth="1" />
       ))}
 
+      {/* Banda de capa activa en la vista lateral */}
+      {activeLayer && (
+        <rect
+          x={PAD}
+          y={PAD + H - activeLayer.yMax}
+          width={L}
+          height={activeLayer.yMax - activeLayer.yMin}
+          fill="#F9731614"
+          stroke="#F97316"
+          strokeWidth="1.5"
+          strokeDasharray="6 3"
+        />
+      )}
+
       {/* Paquetes */}
       {placed.map((pkg) => {
         if (!pkg.position) return null;
         const rotation = pkg.position.rotationY === 90;
         const pkgL = rotation ? pkg.width : pkg.length;
-        // y invertido: el origen SVG es arriba, el piso del trailer es abajo
         const svgY = PAD + H - pkg.position.y - pkg.height;
+        const isInLayer = !activeLayerIds || activeLayerIds.has(pkg.id);
 
         return (
-          <PackageRect
-            key={pkg.id}
-            pkg={pkg}
-            x={PAD + pkg.position.z}
-            y={svgY}
-            w={pkgL}
-            h={pkg.height}
-            isSelected={selectedPackageId === pkg.id}
-            onClick={onSelect}
-          />
+          <g key={pkg.id} opacity={isInLayer ? 1 : 0.12}>
+            <PackageRect
+              pkg={pkg}
+              x={PAD + pkg.position.z}
+              y={svgY}
+              w={pkgL}
+              h={pkg.height}
+              isSelected={selectedPackageId === pkg.id}
+              onClick={onSelect}
+            />
+          </g>
         );
       })}
 
