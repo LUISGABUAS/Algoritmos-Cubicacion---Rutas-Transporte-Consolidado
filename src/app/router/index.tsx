@@ -9,6 +9,7 @@ const PackagesPage     = lazy(() => import("@/pages/PackagesPage"));
 const PackageFormPage  = lazy(() => import("@/pages/PackageFormPage"));
 const TrailersPage     = lazy(() => import("@/pages/TrailersPage"));
 const TrailerFormPage  = lazy(() => import("@/pages/TrailerFormPage"));
+const LoadingIndexPage = lazy(() => import("@/pages/LoadingIndexPage"));
 const LoadingPage      = lazy(() => import("@/pages/LoadingPage"));
 const RoutesPage       = lazy(() => import("@/pages/RoutesPage"));
 const RouteDetailPage  = lazy(() => import("@/pages/RouteDetailPage"));
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
       { path: "trailers",           element: withSuspense(TrailersPage) },
       { path: "trailers/new",       element: withSuspense(TrailerFormPage) },
       { path: "trailers/:id/edit",  element: withSuspense(TrailerFormPage) },
+      { path: "loading",            element: withSuspense(LoadingIndexPage) },
       { path: "loading/:trailerId", element: withSuspense(LoadingPage) },
       { path: "routes",             element: withSuspense(RoutesPage) },
       { path: "routes/:id",         element: withSuspense(RouteDetailPage) },
