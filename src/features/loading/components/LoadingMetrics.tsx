@@ -26,16 +26,17 @@ function MetricChip({ label, value, sub, highlight }: MetricChipProps) {
 interface LoadingMetricsProps {
   trailer: Trailer;
   packages: Package[];
+  overallAccessibility?: number; // 0-1
 }
 
-export function LoadingMetrics({ trailer, packages }: LoadingMetricsProps) {
-  const placed   = packages.filter((p) => p.position);
-  const capVol   = trailerTotalVolume(trailer);
-  const usedVol  = totalVolume(placed);
-  const usedWgt  = totalWeight(placed);
-  const volPct   = capVol > 0 ? (usedVol / capVol) * 100 : 0;
-  const wgtPct   = trailer.maxWeight > 0 ? (usedWgt / trailer.maxWeight) * 100 : 0;
-  const wasted   = 100 - volPct;
+export function LoadingMetrics({ trailer, packages, overallAccessibility }: LoadingMetricsProps) {
+  const placed  = packages.filter((p) => p.position);
+  const capVol  = trailerTotalVolume(trailer);
+  const usedVol = totalVolume(placed);
+  const usedWgt = totalWeight(placed);
+  const volPct  = capVol > 0 ? (usedVol / capVol) * 100 : 0;
+  const wasted  = 100 - volPct;
+  const accPct  = overallAccessibility !== undefined ? overallAccessibility * 100 : null;
 
   return (
     <div className="flex border rounded-lg bg-card overflow-hidden shrink-0">
@@ -64,11 +65,13 @@ export function LoadingMetrics({ trailer, packages }: LoadingMetricsProps) {
         value={formatPercent(wasted)}
         sub={formatVolume(capVol - usedVol)}
       />
-      <MetricChip
-        label="Peso libre"
-        value={formatPercent(100 - wgtPct)}
-        sub={formatWeight(trailer.maxWeight - usedWgt)}
-      />
+      {accPct !== null && (
+        <MetricChip
+          label="Accesibilidad"
+          value={formatPercent(accPct)}
+          highlight={accPct < 90}
+        />
+      )}
     </div>
   );
 }
