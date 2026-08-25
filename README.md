@@ -1,5 +1,7 @@
 # Algoritmos de Cubicación — Rutas y Transporte Consolidado
 
+> **Aportación de Luis** — Frontend completo: arquitectura, pantallas, visualización 2D/3D y capa de conexión al backend.
+
 Frontend del sistema de optimización de carga y rutas para transporte consolidado. Permite registrar paquetes, asignar tráileres, ejecutar el algoritmo de acomodo óptimo y gestionar rutas de entrega con visualización 2D y 3D.
 
 ## Stack
