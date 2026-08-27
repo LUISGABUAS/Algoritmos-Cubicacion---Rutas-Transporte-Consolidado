@@ -7,3 +7,5 @@ shapely>=2.0           # geometria de los tramos (dependencia de osmnx)
 geopandas>=1.0         # tablas geoespaciales (dependencia de osmnx)
 matplotlib>=3.8        # render del PNG
 numpy>=1.26
+deap>=1.4
+
