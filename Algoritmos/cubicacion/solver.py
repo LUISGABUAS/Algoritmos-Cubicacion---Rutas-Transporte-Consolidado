@@ -18,8 +18,9 @@ def get_dimensions(pkg: Package, orientation: int) -> Tuple[float, float, float]
     if orientation == 5: return (dims[2], dims[1], dims[0])
     return (dims[0], dims[1], dims[2])
 
-def pack_sequence(packages: List[Package], trailer: Trailer, sequence: List[int], orientations: List[int]) -> List[Tuple[Placement, Package]]:
-    placed = [] # Lista de dicts {x, y, z, l, w, h, pkg}
+def pack_sequence(packages: List[Package], trailer: Trailer, sequence: List[int], orientations: List[int]) -> Tuple[List[Tuple[Placement, Package]], List[Package]]:
+    placed = []
+    unplaced = []
     
     for i, pkg_idx in enumerate(sequence):
         pkg = packages[pkg_idx]
@@ -44,32 +45,33 @@ def pack_sequence(packages: List[Package], trailer: Trailer, sequence: List[int]
                     placed_ok = True
                     break
             if placed_ok: break
-    
-    return [(Placement(p['pkg'].id, Position(p['x'], p['y'], p['z'], 0)), p['pkg']) for p in placed]
+            
+        if not placed_ok:
+            unplaced.append(pkg)
+            
+    return [(Placement(p['pkg'].id, Position(p['x'], p['y'], p['z'], 0)), p['pkg']) for p in placed], unplaced
 
 # ─── Función de Fitness ───────────────────────────────────────────────────
 
 def evaluate(individual, packages, trailer):
-    # individual: [orden_indices, orientaciones]
     sequence = individual[:len(packages)]
     orientations = individual[len(packages):]
     
-    # Debug
-    # print(f"DEBUG: seq={sequence}, len(pkg)={len(packages)}")
-    
-    placements_with_pkg = pack_sequence(packages, trailer, sequence, orientations)
+    placements_with_pkg, unplaced = pack_sequence(packages, trailer, sequence, orientations)
     
     # 1. Utilización de volumen
     volumen_ocupado = sum([p[1].length * p[1].width * p[1].height for p in placements_with_pkg])
     volumen_trailer = trailer.internalLength * trailer.internalWidth * trailer.internalHeight
     utilization = volumen_ocupado / volumen_trailer
     
-    return (utilization,)
-
+    # Penalizar paquetes no colocados
+    penalty_unplaced = len(unplaced) * 1.0 # Penalización alta por cada caja fuera
+    
+    return (utilization - penalty_unplaced,)
 
 # ─── Solver Evolutivo ──────────────────────────────────────────────────────
 
-def optimize_loading(packages: List[Package], trailer: Trailer) -> List[Placement]:
+def optimize_loading(packages: List[Package], trailer: Trailer) -> Tuple[List[Placement], List[Package]]:
     # Crear clases si no existen
     if not hasattr(creator, "FitnessMax"):
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -84,9 +86,8 @@ def optimize_loading(packages: List[Package], trailer: Trailer) -> List[Placemen
         return creator.Individual(seq + ori)
     
     def mutate_individual(ind):
+        sequence_len = len(packages)
         # Mutate sequence
-        sequence_len = len(ind) // 2
-        # Swap two elements in sequence
         idx1, idx2 = random.sample(range(sequence_len), 2)
         ind[idx1], ind[idx2] = ind[idx2], ind[idx1]
         
@@ -103,7 +104,7 @@ def optimize_loading(packages: List[Package], trailer: Trailer) -> List[Placemen
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("evaluate", evaluate, packages=packages, trailer=trailer)
     
-    pop = toolbox.population(n=20) # Reducido para rapidez
+    pop = toolbox.population(n=20)
     algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=20, verbose=False)
     
     best_ind = tools.selBest(pop, 1)[0]
@@ -112,6 +113,6 @@ def optimize_loading(packages: List[Package], trailer: Trailer) -> List[Placemen
     sequence = best_ind[:len(packages)]
     orientations = best_ind[len(packages):]
     
-    placements_with_pkg = pack_sequence(packages, trailer, sequence, orientations)
+    placements_with_pkg, unplaced = pack_sequence(packages, trailer, sequence, orientations)
     
-    return [p[0] for p in placements_with_pkg]
+    return [p[0] for p in placements_with_pkg], unplaced
