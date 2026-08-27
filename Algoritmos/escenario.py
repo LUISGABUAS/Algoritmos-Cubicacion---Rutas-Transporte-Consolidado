@@ -15,12 +15,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import config, entregas as mod_entregas, giros as mod_giros
-from . import osm, semaforos as mod_semaforos
-from . import rutas
+from . import config, entregas as mod_entregas
+from .rutas import giros as mod_giros
+from .rutas import osm, semaforos as mod_semaforos
+from .rutas import rutas
 from .entregas import Entrega
-from .giros import Giro
-from .grafo import RedVial, construir
+from .rutas.giros import Giro
+from .rutas.grafo import RedVial, construir
 
 
 @dataclass
