@@ -1,0 +1,9 @@
+# Generador de escenarios de ruteo y cubicacion
+# Instalar con:  pip install -r requirements.txt
+
+osmnx>=2.0,<3.0        # descarga y simplificacion de la red vial de OSM
+networkx>=3.0          # estructura de grafo (dependencia de osmnx)
+shapely>=2.0           # geometria de los tramos (dependencia de osmnx)
+geopandas>=1.0         # tablas geoespaciales (dependencia de osmnx)
+matplotlib>=3.8        # render del PNG
+numpy>=1.26
