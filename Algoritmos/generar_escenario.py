@@ -19,7 +19,7 @@ import time
 import unicodedata
 from pathlib import Path
 
-from algoritmos import config, escenario as mod_escenario, exportar, visualizar
+from Algoritmos import config, escenario as mod_escenario, exportar, visualizar
 
 RAIZ = Path(__file__).resolve().parent
 SALIDA_POR_DEFECTO = RAIZ / "data" / "escenarios"

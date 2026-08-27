@@ -17,7 +17,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from algoritmos import config, escenario as mod_escenario, exportar, giros, rutas
+from Algoritmos import config, escenario as mod_escenario, exportar
+from Algoritmos.rutas import giros, rutas
 
 RAIZ = Path(__file__).resolve().parent
 

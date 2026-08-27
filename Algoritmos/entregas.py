@@ -15,7 +15,7 @@ import random
 from dataclasses import dataclass, field
 
 from . import config
-from .grafo import RedVial, distancia_m
+from .rutas.grafo import RedVial, distancia_m
 
 
 @dataclass
