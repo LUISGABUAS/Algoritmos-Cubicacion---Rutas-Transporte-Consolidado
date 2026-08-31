@@ -34,11 +34,11 @@ const mockService = {
       matriz_tiempos: null,
     };
   },
-  async getGeojson(id: string): Promise<any> {
+  async getGeojson(_id: string): Promise<any> {
     await new Promise((r) => setTimeout(r, 100));
     return { type: "FeatureCollection", features: [] };
   },
-  async getPngUrl(id: string): Promise<string> {
+  async getPngUrl(_id: string): Promise<string> {
     // En mock devolvemos una data URL vacía (1x1 PNG).
     return (
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwC" +
