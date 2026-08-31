@@ -3,7 +3,8 @@ import { es } from "date-fns/locale";
 
 /** Formatea un número como peso en kg */
 export function formatWeight(kg: number): string {
-  return `${kg.toLocaleString("es-MX")} kg`;
+  if (kg === null || kg === undefined || Number.isNaN(Number(kg))) return "—";
+  return `${Number(kg).toLocaleString("es-MX")} kg`;
 }
 
 /** Formatea un volumen en m³ con 2 decimales */

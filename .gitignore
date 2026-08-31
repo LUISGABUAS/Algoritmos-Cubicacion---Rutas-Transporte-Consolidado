@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Mock backend persistence (datos locales de desarrollo)
+server/data/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
