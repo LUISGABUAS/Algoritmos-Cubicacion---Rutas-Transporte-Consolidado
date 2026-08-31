@@ -18,6 +18,7 @@ const ClientsPage      = lazy(() => import("@/pages/ClientsPage"));
 const ReportsPage      = lazy(() => import("@/pages/ReportsPage"));
 const OperationsPage   = lazy(() => import("@/pages/OperationsPage"));
 const SettingsPage     = lazy(() => import("@/pages/SettingsPage"));
+const AlgoritmosPlaygroundPage = lazy(() => import("@/pages/algoritmos/AlgoritmosPlaygroundPage"));
 
 function PageLoader() {
   return (
@@ -56,7 +57,9 @@ export const router = createBrowserRouter([
       { path: "clients",            element: withSuspense(ClientsPage) },
       { path: "reports",            element: withSuspense(ReportsPage) },
       { path: "operations",         element: withSuspense(OperationsPage) },
-      { path: "settings",           element: withSuspense(SettingsPage) },
-    ],
+       { path: "settings",           element: withSuspense(SettingsPage) },
+       { path: "algoritmos-test",    element: withSuspense(AlgoritmosPlaygroundPage) },
+     ],
+
   },
 ]);
