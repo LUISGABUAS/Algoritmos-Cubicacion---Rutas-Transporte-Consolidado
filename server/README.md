@@ -7,6 +7,7 @@ Este servidor es un mock mínimo que expone los endpoints que el frontend espera
 - `GET /api/v1/scenarios/:id/geojson` → geojson del escenario (si existe)
 - `GET /api/v1/scenarios/:id/png` → imagen PNG (si existe)
 - `POST /api/v1/optimization/run` → endpoint de optimización (mock)
+- CRUD `/api/v1/packages` (`GET`, `POST`, `GET /:id`, `PUT /:id`, `DELETE /:id`) → persistido en `server/data/packages.json` (se crea automáticamente y sobrevive reinicios del servidor; no se versiona en git)
 
 Uso:
 
