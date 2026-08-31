@@ -8,6 +8,7 @@ import {
   Users,
   Building2,
   BarChart2,
+  FlaskConical,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -27,9 +28,10 @@ const navItems: NavItem[] = [
   { href: "/routes",      label: "Rutas",           icon: Map },
   { href: "/operations",  label: "Operaciones",     icon: ClipboardList },
   { href: "/drivers",     label: "Conductores",     icon: Users },
-  { href: "/clients",     label: "Clientes",        icon: Building2 },
-  { href: "/reports",     label: "Reportes",        icon: BarChart2 },
-  { href: "/settings",    label: "Configuración",   icon: Settings },
+  { href: "/clients",        label: "Clientes",        icon: Building2 },
+  { href: "/reports",        label: "Reportes",        icon: BarChart2 },
+  { href: "/algoritmos-test", label: "Playground",     icon: FlaskConical },
+  { href: "/settings",       label: "Configuración",   icon: Settings },
 ];
 
 interface SidebarNavProps {

@@ -1,0 +1,12 @@
+# Escenarios generados: son reproducibles a partir de su semilla, no hace
+# falta versionarlos. Si quieres fijar uno concreto, forzalo con git add -f.
+data/escenarios/*
+!data/escenarios/.gitkeep
+
+# Cache de descargas de OpenStreetMap
+data/cache_osm/
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
