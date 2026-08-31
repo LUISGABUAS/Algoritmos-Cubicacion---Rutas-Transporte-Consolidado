@@ -15,6 +15,9 @@ interface RouteStatusBadgeProps {
 }
 
 export function RouteStatusBadge({ status, className }: RouteStatusBadgeProps) {
-  const { label, className: badgeClass } = CONFIG[status];
+  const { label, className: badgeClass } = CONFIG[status] ?? {
+    label: status ?? "Desconocido",
+    className: "bg-muted text-muted-foreground border-0",
+  };
   return <Badge className={cn(badgeClass, className)}>{label}</Badge>;
 }
