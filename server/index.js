@@ -82,29 +82,30 @@ app.get(`${API_PREFIX}/packages`, (req, res) => {
   let list = packages;
   if (trailerId) list = list.filter((p) => p.trailerId === trailerId);
   if (routeId) list = list.filter((p) => p.routeId === routeId);
-  res.json(list);
+  res.json(list.map(normalizeForResponse));
 });
 
 app.get(`${API_PREFIX}/packages/:id`, (req, res) => {
   const pkg = packages.find((p) => p.id === req.params.id);
   if (!pkg) return res.status(404).send({ message: 'Not found' });
-  res.json(pkg);
+  res.json(normalizeForResponse(pkg));
 });
 
 app.post(`${API_PREFIX}/packages`, (req, res) => {
   const data = req.body || {};
   const id = `PKG-${String(nextPkgId++).padStart(3, '0')}`;
   const now = new Date().toISOString();
-  const pkg = { id, createdAt: now, updatedAt: now, ...data };
-  packages.push(pkg);
-  res.status(201).json(pkg);
+  const stored = normalizeForStorage({ id, createdAt: now, updatedAt: now, ...data });
+  packages.push(stored);
+  res.status(201).json(normalizeForResponse(stored));
 });
 
 app.put(`${API_PREFIX}/packages/:id`, (req, res) => {
   const idx = packages.findIndex((p) => p.id === req.params.id);
   if (idx === -1) return res.status(404).send({ message: 'Not found' });
-  packages[idx] = { ...packages[idx], ...req.body, updatedAt: new Date().toISOString() };
-  res.json(packages[idx]);
+  const updated = normalizeForStorage({ ...packages[idx], ...req.body, updatedAt: new Date().toISOString() });
+  packages[idx] = updated;
+  res.json(normalizeForResponse(updated));
 });
 
 app.delete(`${API_PREFIX}/packages/:id`, (req, res) => {
@@ -131,3 +132,54 @@ app.post(`${API_PREFIX}/optimization/run`, (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Mock backend listening on http://localhost:${PORT}${API_PREFIX}`));
+
+// --- Helpers para normalizar campos entre backend (es) y frontend (en-US keys)
+function normalizeForStorage(input) {
+  // Accept either frontend keys or backend Spanish keys and store in a canonical frontend shape
+  const out = { ...input };
+  // peso_kg or weight -> weight (number)
+  if (out.peso_kg !== undefined && out.weight === undefined) out.weight = out.peso_kg;
+  if (out.weight !== undefined && out.peso_kg === undefined) out.peso_kg = out.weight;
+  // dimensions
+  if (out.largo_cm !== undefined && out.length === undefined) out.length = out.largo_cm;
+  if (out.ancho_cm !== undefined && out.width === undefined) out.width = out.ancho_cm;
+  if (out.alto_cm !== undefined && out.height === undefined) out.height = out.alto_cm;
+  if (out.length !== undefined) out.largo_cm = out.length;
+  if (out.width !== undefined) out.ancho_cm = out.width;
+  if (out.height !== undefined) out.alto_cm = out.height;
+  // boolean flags
+  if (out.fragil !== undefined && out.fragile === undefined) out.fragile = out.fragil;
+  if (out.apilable !== undefined && out.stackable === undefined) out.stackable = out.apilable;
+  if (out.requiere_seguro !== undefined && out.requiresInsurance === undefined) out.requiresInsurance = out.requiere_seguro;
+  if (out.fragile !== undefined) out.fragil = out.fragile;
+  if (out.stackable !== undefined) out.apilable = out.stackable;
+  if (out.requiresInsurance !== undefined) out.requiere_seguro = out.requiresInsurance;
+  // priority and other
+  if (out.prioridad !== undefined && out.priority === undefined) out.priority = out.prioridad;
+  if (out.priority !== undefined && out.prioridad === undefined) out.prioridad = out.priority;
+  if (out.valor_declarado !== undefined && out.declaredValue === undefined) out.declaredValue = out.valor_declarado;
+  if (out.orientaciones_permitidas !== undefined && out.allowedOrientations === undefined) out.allowedOrientations = out.orientaciones_permitidas;
+  return out;
+}
+
+function normalizeForResponse(stored) {
+  // ensure response uses frontend-friendly keys
+  return {
+    id: stored.id,
+    createdAt: stored.createdAt,
+    updatedAt: stored.updatedAt,
+    destination: stored.destination,
+    length: stored.length,
+    width: stored.width,
+    height: stored.height,
+    weight: stored.weight,
+    fragile: stored.fragile,
+    stackable: stored.stackable,
+    requiresInsurance: stored.requiresInsurance,
+    priority: stored.priority,
+    declaredValue: stored.declaredValue,
+    allowedOrientations: stored.allowedOrientations,
+    // keep any extra fields
+    ...Object.fromEntries(Object.entries(stored).filter(([k]) => !["id","createdAt","updatedAt","destination","length","width","height","weight","fragile","stackable","requiresInsurance","priority","declaredValue","allowedOrientations"].includes(k)))
+  };
+}
