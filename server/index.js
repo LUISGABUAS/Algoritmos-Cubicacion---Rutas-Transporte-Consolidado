@@ -73,9 +73,54 @@ app.get(`${API_PREFIX}/scenarios/:id/png`, (req, res) => {
   res.send(buf);
 });
 
-// --- Paquetes en memoria (mock CRUD) -------------------------------------
-const packages = [];
-let nextPkgId = 1;
+// --- Paquetes con persistencia simple en disco (mock CRUD) ---------------
+const DATA_DIR = path.join(__dirname, "data");
+const PACKAGES_FILE = path.join(DATA_DIR, "packages.json");
+
+function loadPackages() {
+  try {
+    const raw = fs.readFileSync(PACKAGES_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    const list = Array.isArray(parsed.packages) ? parsed.packages : [];
+    // re-normalizar por si el archivo viene de una versión anterior del mock
+    // (p.ej. sin status/priority válidos)
+    return list.map(normalizeForStorage);
+  } catch (e) {
+    return [];
+  }
+}
+
+function loadNextPkgId(loadedPackages) {
+  try {
+    const raw = fs.readFileSync(PACKAGES_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    if (Number.isInteger(parsed.nextPkgId)) return parsed.nextPkgId;
+  } catch (e) {
+    // ignore, derive below
+  }
+  const maxSeen = loadedPackages.reduce((max, p) => {
+    const n = parseInt(String(p.id).replace(/^PKG-/, ""), 10);
+    return Number.isFinite(n) ? Math.max(max, n) : max;
+  }, 0);
+  return maxSeen + 1;
+}
+
+function savePackages() {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(
+      PACKAGES_FILE,
+      JSON.stringify({ packages, nextPkgId }, null, 2),
+      "utf8"
+    );
+  } catch (e) {
+    console.error("No se pudo persistir packages.json:", e.message);
+  }
+}
+
+const packages = loadPackages();
+let nextPkgId = loadNextPkgId(packages);
+if (packages.length > 0) savePackages(); // persistir cualquier normalización aplicada al cargar
 
 app.get(`${API_PREFIX}/packages`, (req, res) => {
   const { trailerId, routeId } = req.query;
@@ -97,6 +142,7 @@ app.post(`${API_PREFIX}/packages`, (req, res) => {
   const now = new Date().toISOString();
   const stored = normalizeForStorage({ id, createdAt: now, updatedAt: now, ...data });
   packages.push(stored);
+  savePackages();
   res.status(201).json(normalizeForResponse(stored));
 });
 
@@ -105,6 +151,7 @@ app.put(`${API_PREFIX}/packages/:id`, (req, res) => {
   if (idx === -1) return res.status(404).send({ message: 'Not found' });
   const updated = normalizeForStorage({ ...packages[idx], ...req.body, updatedAt: new Date().toISOString() });
   packages[idx] = updated;
+  savePackages();
   res.json(normalizeForResponse(updated));
 });
 
@@ -112,6 +159,7 @@ app.delete(`${API_PREFIX}/packages/:id`, (req, res) => {
   const idx = packages.findIndex((p) => p.id === req.params.id);
   if (idx === -1) return res.status(404).send({ message: 'Not found' });
   packages.splice(idx, 1);
+  savePackages();
   res.status(204).end();
 });
 
@@ -157,8 +205,16 @@ function normalizeForStorage(input) {
   // priority and other
   if (out.prioridad !== undefined && out.priority === undefined) out.priority = out.prioridad;
   if (out.priority !== undefined && out.prioridad === undefined) out.prioridad = out.priority;
+  const VALID_PRIORITIES = ["low", "medium", "high"];
+  if (!VALID_PRIORITIES.includes(out.priority)) out.priority = "medium";
+  out.prioridad = out.priority;
   if (out.valor_declarado !== undefined && out.declaredValue === undefined) out.declaredValue = out.valor_declarado;
   if (out.orientaciones_permitidas !== undefined && out.allowedOrientations === undefined) out.allowedOrientations = out.orientaciones_permitidas;
+  // status (estado) — siempre debe quedar un valor válido para el frontend
+  if (out.estado !== undefined && out.status === undefined) out.status = out.estado;
+  const VALID_STATUSES = ["pending", "assigned", "loaded", "in_transit", "delivered"];
+  if (!VALID_STATUSES.includes(out.status)) out.status = "pending";
+  out.estado = out.status;
   return out;
 }
 
@@ -179,7 +235,8 @@ function normalizeForResponse(stored) {
     priority: stored.priority,
     declaredValue: stored.declaredValue,
     allowedOrientations: stored.allowedOrientations,
+    status: stored.status,
     // keep any extra fields
-    ...Object.fromEntries(Object.entries(stored).filter(([k]) => !["id","createdAt","updatedAt","destination","length","width","height","weight","fragile","stackable","requiresInsurance","priority","declaredValue","allowedOrientations"].includes(k)))
+    ...Object.fromEntries(Object.entries(stored).filter(([k]) => !["id","createdAt","updatedAt","destination","length","width","height","weight","fragile","stackable","requiresInsurance","priority","declaredValue","allowedOrientations","status"].includes(k)))
   };
 }

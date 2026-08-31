@@ -14,7 +14,10 @@ interface PriorityBadgeProps {
 }
 
 export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
-  const { label, className: badgeClass } = CONFIG[priority];
+  const { label, className: badgeClass } = CONFIG[priority] ?? {
+    label: priority ?? "Desconocida",
+    className: "bg-muted text-muted-foreground border-0",
+  };
   return (
     <Badge className={cn(badgeClass, className)}>
       {label}
